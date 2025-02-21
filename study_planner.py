@@ -24,13 +24,14 @@ def convert_time_to_hours(time_interval):
         return 0
 
 class StudyPlanner:
-    def __init__(self, study_goals, available_time, preferences, strengths, weaknesses):
+    def __init__(self, study_goals, available_time, preferences, strengths, weaknesses, weekly_schedule=None):
         self.study_goals = study_goals
         self.available_time = available_time
         self.preferences = preferences
         self.strengths = strengths
         self.weaknesses = weaknesses
         self.study_progress = {subject: 0 for subject in study_goals}
+        self.weekly_schedule = weekly_schedule  # Store weekly schedule
 
     def display_study_plan(self):
         st.subheader("📚 Your Study Plan")
@@ -42,6 +43,10 @@ class StudyPlanner:
             "Weakness": [self.weaknesses.get(s, "None") for s in self.study_goals],
         })
         st.dataframe(df, use_container_width=True)
+
+        if self.weekly_schedule:
+            st.subheader("🗓️ Weekly Schedule")
+            st.write(self.weekly_schedule)
 
     def track_progress(self, subject, hours):
         if subject in self.study_progress:
@@ -83,9 +88,19 @@ def main():
             for goal in study_goals:
                 time = st.text_input(f"Time for {goal.capitalize()} (e.g., 9:00 AM - 11:00 AM)")
                 available_time[goal] = convert_time_to_hours(time)
+            weekly_schedule = None
         else:
             for goal in study_goals:
                 available_time[goal] = st.number_input(f"Hours for {goal.capitalize()}", min_value=0.0, step=0.5)
+
+            # Collect weekly schedule if the user doesn't have a fixed schedule
+            weekly_schedule = {}
+            st.subheader("🗓️ Enter Your Available Time Slots for Each Day of the Week")
+            days_of_week = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+
+            for day in days_of_week:
+                day_schedule = st.text_input(f"{day}: (e.g., 5:00 AM - 7:00 AM, 5:00 PM - 10:00 PM)")
+                weekly_schedule[day] = day_schedule
 
         preferences, strengths, weaknesses = {}, {}, {}
         for goal in study_goals:
@@ -95,7 +110,7 @@ def main():
                 weaknesses[goal] = st.text_input(f"Weakness in {goal.capitalize()}")
 
         if st.button("Generate Study Plan"):
-            st.session_state["planner"] = StudyPlanner(study_goals, available_time, preferences, strengths, weaknesses)
+            st.session_state["planner"] = StudyPlanner(study_goals, available_time, preferences, strengths, weaknesses, weekly_schedule)
             st.session_state["plan_generated"] = True  # Track if the plan was generated
             st.success("✅ Study plan created!")
 
