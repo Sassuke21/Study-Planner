@@ -1,6 +1,4 @@
 import streamlit as st
-
-from bert_utils import get_bert_concept
 from datetime import datetime
 import pandas as pd
 
@@ -81,26 +79,19 @@ def main():
             st.warning("⚠️ Please enter at least one subject.")
             return  # Stop execution if no subjects are entered
 
-        study_time_option = st.radio("Do you have a fixed schedule?", ["Yes", "No"])
         available_time = {}
 
-        if study_time_option == "Yes":
-            for goal in study_goals:
-                time = st.text_input(f"Time for {goal.capitalize()} (e.g., 9:00 AM - 11:00 AM)")
-                available_time[goal] = convert_time_to_hours(time)
-            weekly_schedule = None
-        else:
-            for goal in study_goals:
-                available_time[goal] = st.number_input(f"Hours for {goal.capitalize()}", min_value=0.0, step=0.5)
+        # Collect available time slots if the user doesn't have a fixed schedule
+        weekly_schedule = {}
+        st.subheader("🗓️ Enter Your Available Time Slots for Each Day of the Week")
+        days_of_week = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 
-            # Collect weekly schedule if the user doesn't have a fixed schedule
-            weekly_schedule = {}
-            st.subheader("🗓️ Enter Your Available Time Slots for Each Day of the Week")
-            days_of_week = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+        for day in days_of_week:
+            day_schedule = st.text_input(f"{day}: (e.g., 5:00 AM - 7:00 AM, 5:00 PM - 10:00 PM)")
+            weekly_schedule[day] = day_schedule
 
-            for day in days_of_week:
-                day_schedule = st.text_input(f"{day}: (e.g., 5:00 AM - 7:00 AM, 5:00 PM - 10:00 PM)")
-                weekly_schedule[day] = day_schedule
+        for goal in study_goals:
+            available_time[goal] = st.number_input(f"Hours for {goal.capitalize()}", min_value=0.0, step=0.5)
 
         preferences, strengths, weaknesses = {}, {}, {}
         for goal in study_goals:
